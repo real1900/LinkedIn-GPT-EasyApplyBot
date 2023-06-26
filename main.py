@@ -143,8 +143,12 @@ def validate_yaml(config_yaml_path: Path):
     return parameters
 
 
-def main(data_folder_path: Path):
-    print(f"Using data folder path: {data_folder}")
+def build_parameters(data_folder: Path) -> dict:
+    """
+    Builds the parameters used by the bot.
+    :param data_folder: The path to the data folder.
+    :return: The parameters used by the bot.
+    """
     # Paths to the files inside the data folder
     config_file, resume_file, cover_letter_file, plain_text_resume_file, plain_text_cover_letter_file, personal_data_file, job_filters_file, output_folder = validate_data_folder(data_folder)
 
@@ -154,15 +158,10 @@ def main(data_folder_path: Path):
     parameters['uploads'] = file_paths_to_dict(resume_file, cover_letter_file, plain_text_resume_file, plain_text_cover_letter_file, personal_data_file, job_filters_file)
     parameters['outputFileDirectory'] = output_folder
 
-    # Start the bot
-    browser = init_browser()
-    bot = LinkedinEasyApply(parameters, browser)
-    bot.login()
-    bot.security_check()
-    bot.start_applying()
+    return parameters
 
 
-if __name__ == "__main__":
+def args_datafolder() -> Path:
     parser = argparse.ArgumentParser(description="Process data folder path")
     parser.add_argument("data_folder", help="Path to the data folder")
 
@@ -177,4 +176,21 @@ if __name__ == "__main__":
         print(f"The data folder {data_folder} is not a folder!")
         exit(1)
 
-    main(args.data_folder)
+    return data_folder
+
+
+def main(data_folder_path: Path):
+    print(f"Using data folder path: {data_folder}")
+    parameters = build_parameters(data_folder_path)
+
+    # Start the bot
+    browser = init_browser()
+    bot = LinkedinEasyApply(parameters, browser)
+    bot.login()
+    bot.security_check()
+    bot.start_applying()
+
+
+if __name__ == "__main__":
+    data_folder = args_datafolder()
+    main(data_folder.absolute())
