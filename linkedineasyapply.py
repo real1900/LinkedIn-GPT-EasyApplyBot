@@ -497,28 +497,34 @@ class LinkedinEasyApply:
 
         return False
 
-    def home_address(self, element):
-        try:
-            groups = element.find_elements(By.CLASS_NAME, 'jobs-easy-apply-form-section__grouping')
-            if len(groups) > 0:
-                for group in groups:
-                    lb = group.find_element(By.TAG_NAME, 'label').text.lower()
-                    input_field = group.find_element(By.TAG_NAME, 'input')
-                    if 'street' in lb:
-                        self.enter_text(input_field, self.personal_info['Street address'])
-                    elif 'city' in lb:
-                        self.enter_text(input_field, self.personal_info['City'])
-                        time.sleep(3)
-                        input_field.send_keys(Keys.DOWN)
-                        input_field.send_keys(Keys.RETURN)
-                    elif 'zip' in lb or 'postal' in lb:
-                        self.enter_text(input_field, self.personal_info['Zip'])
-                    elif 'state' in lb or 'province' in lb:
-                        self.enter_text(input_field, self.personal_info['State'])
-                    else:
-                        pass
-        except:
-            pass
+    def home_address(self, group) -> bool:
+        """
+        Tries to fill up the home address fields.
+        :param group:
+        :return: True if the group was filled up, False otherwise.
+        """
+        lb = group.find_element(By.TAG_NAME, 'label').text.lower()
+        input_field = group.find_element(By.TAG_NAME, 'input')
+        if 'street' in lb:
+            self.enter_text(input_field, self.personal_info['Street address'])
+            return True
+
+        elif 'city' in lb:
+            self.enter_text(input_field, self.personal_info['City'])
+            time.sleep(3)
+            input_field.send_keys(Keys.DOWN)
+            input_field.send_keys(Keys.RETURN)
+            return True
+
+        elif 'zip' in lb or 'postal' in lb:
+            self.enter_text(input_field, self.personal_info['Zip'])
+            return True
+
+        elif 'state' in lb or 'province' in lb:
+            self.enter_text(input_field, self.personal_info['State'])
+            return True
+
+        return False
 
     def get_answer(self, question):
         """
@@ -541,30 +547,25 @@ class LinkedinEasyApply:
             return False
 
     # MARK: Additional Questions
-    def additional_questions(self):
-        frm_el = self.browser.find_elements(By.CLASS_NAME, 'jobs-easy-apply-form-section__grouping')
-        if len(frm_el) == 0:
+    def open_question(self, group):
+        # Each call will try to do its job, if they can't, they will return early
+        # TODO: return bool indicating if the question was answered or not to continue to the next question
+
+        # Checkbox check for agreeing to terms and service
+        if self.additional_questions_agree_terms_of_service(group):  # If the question is "agree to terms of service", it's resolved -> skip to next question
             return
 
-        for el in frm_el:
-            # Each call will try to do its job, if they can't, they will return early
-            # TODO: return bool indicating if the question was answered or not to continue to the next question
+        # Radio check
+        self.additional_questions_radio_gpt(group)
 
-            # Checkbox check for agreeing to terms and service
-            if self.additional_questions_agree_terms_of_service(el):  # If the question is "agree to terms of service", it's resolved -> skip to next question
-                continue
+        # Questions check
+        self.additional_questions_textbox_gpt(group)
 
-            # Radio check
-            self.additional_questions_radio_gpt(el)
+        # Date Check
+        self.additional_questions_date(group)
 
-            # Questions check
-            self.additional_questions_textbox_gpt(el)
-
-            # Date Check
-            self.additional_questions_date(el)
-
-            # Dropdown check
-            self.additional_questions_drop_down_gpt(el)
+        # Dropdown check
+        self.additional_questions_drop_down_gpt(group)
 
     def additional_questions_agree_terms_of_service(self, el) -> bool:
         """
@@ -784,73 +785,86 @@ class LinkedinEasyApply:
         label.click()
 
     # Contact info fill-up
-    def contact_info(self):
-        frm_el = self.browser.find_elements(By.CLASS_NAME, 'jobs-easy-apply-form-section__grouping')
+    def contact_info(self, group) -> bool:
+        """
+        This function fills up the contact info section of the application form.
+        :param group:
+        :return: Bool indicating if the contact info was filled up successfully.
+        """
+        text = group.text.lower()
+        if 'email address' in text:
+            # assume email is already filled out
+            return True
 
-        if len(frm_el) == 0:
-            return
+        elif 'phone number' in text:
+            try:
+                country_code_picker = group.find_element(By.XPATH, '//select[contains(@id,"phoneNumber")][contains(@id,"country")]')
+                self.select_dropdown(country_code_picker, self.personal_info['Phone Country Code'])
+                return True
+            except Exception as e:
+                print("Country code " + self.personal_info['Phone Country Code'] + " not found! Make sure it is exact.")
+                print(e)
 
-        for el in frm_el:
-            text = el.text.lower()
-            if 'email address' in text:
-                continue
-            elif 'phone number' in text:
-                try:
-                    country_code_picker = el.find_element(By.XPATH, '//select[contains(@id,"phoneNumber")][contains(@id,"country")]')
-                    self.select_dropdown(country_code_picker, self.personal_info['Phone Country Code'])
-                except Exception as e:
-                    print("Country code " + self.personal_info['Phone Country Code'] + " not found! Make sure it is exact.")
-                    print(e)
-                try:
-                    phone_number_field = el.find_element(By.XPATH, '//input[contains(@id,"phoneNumber")][contains(@id,"nationalNumber")]')
-                    self.enter_text(phone_number_field, self.personal_info['Mobile Phone Number'])
-                except Exception as e:
-                    print("Could not input phone number:")
-                    print(e)
+            try:
+                phone_number_field = group.find_element(By.XPATH, '//input[contains(@id,"phoneNumber")][contains(@id,"nationalNumber")]')
+                self.enter_text(phone_number_field, self.personal_info['Mobile Phone Number'])
+                return True
+            except Exception as e:
+                print("Could not input phone number:")
+                print(e)
+
+        return False
 
     def fill_up(self):
         """
         Fills up the form page with the resume information.
         """
         # TODO: Too many try/excepts. Refactor this.
-        try:
-            easy_apply_content = self.browser.find_element(By.CLASS_NAME, 'jobs-easy-apply-content')
-            pb4 = easy_apply_content.find_elements(By.CLASS_NAME, 'pb4')
 
-            if len(pb4) == 0:
-                raise Exception("No pb4 class elements found in element")
+        easy_apply_content = self.browser.find_element(By.CLASS_NAME, 'jobs-easy-apply-content')
+        pb4 = easy_apply_content.find_elements(By.CLASS_NAME, 'pb4')
 
-            for pb in pb4:
+        if len(pb4) == 0:
+            raise Exception("No pb4 class elements found in element")
+
+        for pb in pb4:
+            # 1. Try sending the resume and cover letter.
+            #    This screen has no other fields, so we can skip the rest if this is successful.
+            if self.is_upload_field(pb):
                 try:
-                    label = pb.find_element(By.TAG_NAME, 'h3').text.lower()
+                    self.try_send_resume()
+                    continue  # Field is filled up, go to next
+                except Exception as e:
+                    pass
 
-                    # 1. Fill up the form with the personal info if possible
-                    # TODO: Change to GPT supported? This works really well
-                    if 'home address' in label:
-                        self.home_address(pb)
-                        continue  # Field is filled up, go to next
+            # 2. Try filling up the form
+            #    Let's answer question by question
+            try:
+                # Each group is a question in the form
+                groups = pb.find_elements(By.CLASS_NAME, 'jobs-easy-apply-form-section__grouping')
 
-                    if 'contact info' in label:
-                        self.contact_info()
-                        continue  # Field is filled up, go to next
+                if len(groups) == 0:
+                    continue
 
-                    # 2. Send the resume and cover letter
-                    if self.is_upload_field(pb):
-                        try:
-                            self.try_send_resume()
-                            continue  # Field is filled up, go to next
-                        except Exception as e:
-                            pass
-
-                    # 3. Fill up the form with the other information
+                for group in groups:
                     try:
-                        self.additional_questions()
+                        if self.home_address(pb):
+                            continue                    # If answered, next group
                     except Exception as e:
                         pass
-                except:
-                    pass
-        except:
-            pass
+
+                    try:
+                        if self.contact_info(group):
+                            continue                    # If answered, next group
+                    except Exception as e:
+                        pass
+
+                    try:
+                        self.open_question(group)
+                    except Exception as e:
+                        pass
+            except:
+                continue
 
     def write_to_file(self, company, job_title, link, location, search_location, file_name='output'):
         to_write = [company, job_title, link, location]
