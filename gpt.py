@@ -91,12 +91,14 @@ class LoggerChatModel(SimpleChatModel):
 
 class GPTAnswerer:
     # TODO: template = textwrap.dedent(template) all templates
-    def __init__(self, resume: str, personal_data: str, cover_letter: str, job_filtering_rules: str):
+    def __init__(self, resume: str, personal_data: str, cover_letter: str, job_filtering_rules: str, skip_job_description_summarization: bool = False):
         """
         Initializes the GPTAnswerer.
         :param resume: The resume text, preferably in Markdown format.
         :param personal_data: The personal data text, preferably in Markdown format, following the template, but any text is fine.
         :param cover_letter: The cover letter text, preferably in Markdown format, use placeholders as [position], [company], etc.
+        :param job_filtering_rules: The job filtering rules, following the format outlined on the README.md file.
+        :param skip_job_description_summarization: If True, the job description summarization will be skipped, and the full job description will be used.
         """
         self.resume = resume
         self.personal_data = personal_data
@@ -104,6 +106,7 @@ class GPTAnswerer:
         self._job_description = ""
         self.job_description_summary = ""
         self.job_filtering_rules = job_filtering_rules
+        self.skip_job_description_summarization = skip_job_description_summarization
         '''
         Two lists of job titles, a whitelist and a blacklist.
         ```
@@ -133,7 +136,10 @@ class GPTAnswerer:
     @job_description.setter
     def job_description(self, value):
         self._job_description = value
-        self.job_description_summary = self.summarize_job_description(value)
+        if not self.skip_job_description_summarization:
+            self.job_description_summary = self.summarize_job_description(value)
+        else:
+            self.job_description_summary = value
 
     @staticmethod
     def openai_api_key():

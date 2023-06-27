@@ -19,10 +19,14 @@ class EnvironmentKeys:
 
     def __init__(self):
         self.skip_apply: bool = self._read_env_key_bool("SKIP_APPLY")
-        self.disable_description_filter: bool = self._read_env_key_bool("DISABLE_DESCRIPTION_FILTER")
         """
         If True, the bot will not start applying to jobs, but will get up to the point where it would start applying.
         - Useful to debug the blacklists.
+        """
+        self.disable_description_filter: bool = self._read_env_key_bool("DISABLE_DESCRIPTION_FILTER")
+        self.skip_job_summarization: bool = self._read_env_key_bool("SKIP_JOB_SUMMARIZATION")
+        """
+        If True, the bot will not summarize the job description, using the full description instead.
         """
 
     @staticmethod
@@ -61,6 +65,7 @@ class EnvironmentKeys:
         print("\nEnv config:")
         print(f"\t- SKIP_APPLY: {self.skip_apply}\n")
         print(f"\t- DISABLE_DESCRIPTION_FILTER: {self.disable_description_filter}\n")
+        print(f"\t- SKIP_JOB_SUMMARIZATION: {self.skip_job_summarization}\n")
         print("\n")
 
 
@@ -112,8 +117,8 @@ class LinkedinEasyApply:
         file = open(job_filters_path, "r")  # Read the file
         job_filters: str = file.read()
 
-        # - Build the GPT answerer using the plain text data
-        self.gpt_answerer = GPTAnswerer(plain_text_resume, plain_text_personal_data, plain_text_cover_letter, job_filters)
+        # - Build the GPT answerer using the plain text data, and configuration flags
+        self.gpt_answerer = GPTAnswerer(plain_text_resume, plain_text_personal_data, plain_text_cover_letter, job_filters, skip_job_description_summarization=self.env_config.skip_job_summarization)
 
     def login(self):
         try:
