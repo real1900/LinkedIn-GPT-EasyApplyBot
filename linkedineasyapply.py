@@ -848,7 +848,7 @@ class LinkedinEasyApply:
 
                 for group in groups:
                     try:
-                        if self.home_address(pb):
+                        if self.home_address(group):
                             continue                    # If answered, next group
                     except Exception as e:
                         pass

@@ -372,8 +372,8 @@ class GPTAnswerer:
             prompt=cover_letter_prompt_template
         )
         # - Summary
-        summary_prompt_template = PromptTemplate(template=summary_template, input_variables=["resume", "job_description", "question"])
-        summary_prompt_template = summary_prompt_template.partial(resume=self.resume, job_description=self.job_description_summary, question=question)
+        summary_prompt_template = PromptTemplate(template=summary_template, input_variables=["resume", "job_description"])
+        summary_prompt_template = summary_prompt_template.partial(resume=self.resume, job_description=self.job_description_summary)
         summary_chain = LLMChain(
             llm=self.llm_cheap,
             prompt=summary_prompt_template
