@@ -203,11 +203,27 @@ class GPTAnswerer:
         """
         # Can answer questions from the resume, personal data, and cover letter. Deciding which context is relevant. So we don't create a very large prompt concatenating all the data.
         # Prompt templates:
+        # - Personal data   ->  Personal data.
         # - Resume stuff + Personal data.
-        # - Cover letter -> personalize to the job description
-        # - Summary -> Resume stuff + Job description (summary)
+        # - Cover letter    ->  personalize to the job description
+        # - Summary         ->  Resume stuff + Job description (summary)
 
         # Templates:
+        # - Personal data
+        personal_data_template = """
+        Te following is a question answered directly from the personal data also provided.
+        - The question is asked directly. e.g. "Name" -> "John Doe", "Age" -> "25", "Location" -> "New York"
+        
+        ## Question:
+        {question}
+        
+        ## Personal Data:
+        ```
+        {personal_data}
+        ```
+        
+        ## Answer:"""
+
         # - Resume Stuff
         resume_stuff_template = """
         The following is a resume, personal data, and an answered question using this information, being answered by the person who's resume it is (first person).
@@ -278,31 +294,38 @@ class GPTAnswerer:
 
         # - Summary
         summary_template = """
-        The following is a resume, a job description, and an answered question using this information, being answered by the person who's resume it is (first person).
+        The following is a summary of why the candidate is a good fit for the job.
+        - The summary is written by the candidate.
+        - The summary is based on the resume and the job description.
         
-        ## Rules
-        - Answer questions directly.
-        - If seems likely that you have the experience, even if is not explicitly defined, answer as if you have the experience.
-        - Find relations between the job description and the resume, and answer questions about that.
-        - Only add periods if the answer has multiple sentences/paragraphs.
-
-        
-        ## Job Description:
-        ```
-        {job_description}
-        ```
+        ## To write a good summary for a job application:
+        1. Mention your professional background and relevant experience.
+        2. Highlight key skills and expertise related to the job.
+        3. Include your education, qualifications, and any relevant training.
+        4. Showcase notable accomplishments and achievements.
+        5. Mention personal attributes that make you a strong candidate.
+        6. Briefly state your career goals and motivations.
+        7. Use keywords from the job description.
+        8. Keep it concise, focused, and tailored to the job and company.
         
         ## Resume:
         ```
         {resume}
         ```
         
-        ## Question:
-        {question}
+        ## Job Description:
+        ```
+        {job_description}
+        ```
         
-        ## Answer:"""
+        ## Summary:"""
 
         prompt_infos = [
+            {
+                "name": "personal data",
+                "description": "Good for answering questions about personal data. Questions like 'name', 'age', 'location', 'email', 'phone number', 'social networks', 'links of interest', etc.",
+                "prompt_template": personal_data_template
+            },
             {
                 "name": "resume",
                 "description": "Good for answering questions about job experience, skills, education, and personal data. Questions like 'experience with python', 'education', 'full name', 'social networks', 'links of interest', etc.",
@@ -315,17 +338,25 @@ class GPTAnswerer:
             },
             {
                 "name": "summary",
-                "description": "Good for answering questions about the job description, and how I will fit into the company or the role. Questions like, summary of the resume, why you are a good fit, etc.",
+                "description": "Good for answering questions about the candidate's fit for the job. Questions like, summary, summary of the resume, why you are a good fit, etc.",
                 "prompt_template": summary_template
             }
         ]
 
         # Preprocess the templates
+        personal_data_template = self._preprocess_template_string(personal_data_template)
         resume_stuff_template = self._preprocess_template_string(resume_stuff_template)
-        resume_stuff_template = self._preprocess_template_string(resume_stuff_template)
-        resume_stuff_template = self._preprocess_template_string(resume_stuff_template)
+        cover_letter_template = self._preprocess_template_string(cover_letter_template)
+        summary_template = self._preprocess_template_string(summary_template)
 
         # Create the chains, using partials to fill in the data, as the MultiPromptChain does not support more than one input variable.
+        # - Personal Data
+        personal_data_prompt_template = PromptTemplate(template=personal_data_template, input_variables=["personal_data", "question"])
+        personal_data_prompt_template = personal_data_prompt_template.partial(personal_data=self.personal_data, question=question)
+        personal_data_chain = LLMChain(
+            llm=self.llm_cheap,
+            prompt=personal_data_prompt_template
+        )
         # - Resume Stuff
         resume_stuff_prompt_template = PromptTemplate(template=resume_stuff_template, input_variables=["personal_data", "resume", "question"])
         resume_stuff_prompt_template = resume_stuff_prompt_template.partial(personal_data=self.personal_data, resume=self.resume, question=question)
@@ -349,8 +380,12 @@ class GPTAnswerer:
         )
 
         # Create the router chain
-        destination_chains = {"resume": resume_stuff_chain, "cover letter": cover_letter_chain, "summary": summary_chain}
-        default_chain = ConversationChain(llm=self.llm_cheap, output_key="text")  # Is it a ConversationChain? Or a LLMChain? Or a MultiPromptChain?
+        destination_chains = {
+            "personal data": personal_data_chain,
+            "resume": resume_stuff_chain,
+            "cover letter": cover_letter_chain,
+            "summary": summary_chain
+        }
         destinations = [f"{p['name']}: {p['description']}" for p in prompt_infos]
         destinations_str = "\n".join(destinations)
         router_template = MULTI_PROMPT_ROUTER_TEMPLATE.format(
@@ -365,9 +400,14 @@ class GPTAnswerer:
         # TODO: This is expensive. Test with new models / new versions of langchain.
         # TODO: PR Langchain with a fix to this that can use gpt3, because the problem is with the prompt/handling of the output, as expects a JSON.
         router_chain = LLMRouterChain.from_llm(self.llm_expensive, router_prompt)        # Using the advanced LLM, as is the only one that seems to work with the router chain expected output format.
+        chain = MultiPromptChain(
+            router_chain=router_chain,
+            destination_chains=destination_chains,
+            default_chain=resume_stuff_chain,
+            verbose=True
+        )
 
-        chain = MultiPromptChain(router_chain=router_chain, destination_chains=destination_chains, default_chain=resume_stuff_chain, verbose=True)
-
+        # Run the chain
         result = chain({"input": question})
         result_text = result["text"].strip()
 
