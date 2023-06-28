@@ -428,7 +428,12 @@ class LinkedinEasyApply:
         submitted_application = False  # Flag to check if the application was submitted successfully
         while not submitted_application:  # Iterate filling up fields until the submit application button is found
             try:
-                self.fill_up()  # Fill up the fields
+                try:
+                    self.fill_up()  # Fill up the fields
+                except Exception as e:
+                    # TODO: Check which kind of error is this and if it can be recovered.
+                    # Fill up will raise an error if no element to fill in is found, continue to the next step.
+                    pass
                 submitted_application = self.apply_to_job_form_next_step()  # Click the next button after filling up the fields
             except:
                 # On any error, close the application window, save the job for later and raise a final exception.
