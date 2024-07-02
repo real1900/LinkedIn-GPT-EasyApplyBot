@@ -14,7 +14,12 @@ def init_browser():
                '--ignore-certificate-errors', '--disable-blink-features=AutomationControlled','--disable-gpu','--remote-debugging-port=9222']
     for option in options:
         browser_options.add_argument(option)
-    driver = webdriver.Chrome(options=browser_options)
+    
+    # Ensure Chromedriver is installed and available
+    driver_path = ChromeDriverManager().install()
+
+    # Initialize WebDriver with specified path
+    driver = webdriver.Chrome(executable_path=driver_path, options=browser_options)
     return driver
 
 
@@ -78,6 +83,62 @@ def file_paths_to_dict(resume_file: Path, cover_letter_file: Path, plain_text_re
 
 
 def validate_yaml(config_yaml_path: Path):
+    """
+    Validates the yaml file, checking that all the mandatory parameters are present.
+    :param config_yaml_path: The path to the yaml file.
+    :return: The parameters extracted from the yaml file.
+    """
+    with open(config_yaml_path, 'r') as stream:
+        try:
+            parameters = yaml.safe_load(stream)
+            if parameters is None:
+                raise ValueError("YAML file is empty or could not be parsed correctly.")
+        except yaml.YAMLError as exc:
+            print(f"Error parsing YAML file: {exc}")
+            raise  # Rethrow the exception to halt execution
+
+    # Validate parameters structure and content
+    mandatory_params = ['email', 'password', 'disableAntiLock', 'remote', 'experienceLevel', 'jobTypes', 'date',
+                        'positions', 'locations', 'distance', 'personalInfo']
+
+    for mandatory_param in mandatory_params:
+        if mandatory_param not in parameters:
+            raise Exception(f'{mandatory_param} is missing in the YAML file!')
+
+    assert validate_email(parameters['email'])
+    assert len(str(parameters['password'])) > 0
+
+    assert isinstance(parameters['disableAntiLock'], bool)
+
+    assert isinstance(parameters['remote'], bool)
+
+    assert len(parameters['experienceLevel']) > 0
+    experience_level = parameters.get('experienceLevel', [])
+    at_least_one_experience = any(experience_level.values())
+    assert at_least_one_experience
+
+    assert len(parameters['jobTypes']) > 0
+    job_types = parameters.get('jobTypes', [])
+    at_least_one_job_type = any(job_types.values())
+    assert at_least_one_job_type
+
+    assert len(parameters['date']) > 0
+    date = parameters.get('date', [])
+    at_least_one_date = any(date.values())
+    assert at_least_one_date
+
+    approved_distances = {0, 5, 10, 25, 50, 100}
+    assert parameters['distance'] in approved_distances
+
+    assert len(parameters['positions']) > 0
+    assert len(parameters['locations']) > 0
+
+    assert parameters.get('uploads', {}).get('resume')  # Validate presence of 'resume' in 'uploads'
+
+    assert parameters.get('personalInfo')  # Validate presence and content of 'personalInfo'
+
+    return parameters
+
     """
     Validates the yaml file, checking that all the mandatory parameters are present.
     :param config_yaml_path: The path to the yaml file.

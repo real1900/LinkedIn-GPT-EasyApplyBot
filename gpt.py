@@ -4,7 +4,8 @@ import textwrap
 from datetime import datetime
 from typing import Optional, List, Mapping, Any
 from utils import Markdown
-from langchain import PromptTemplate, OpenAI
+from langchain.prompts import PromptTemplate
+from langchain.llms.openai import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.chains.router import MultiPromptChain
@@ -17,7 +18,12 @@ from langchain.llms.base import LLM
 from Levenshtein import distance
 from langchain.schema import BaseMessage
 import inspect
-
+from langchain_core.load.serializable import Serializable
+import langchain
+from langchain.llms.openai import OpenAI
+from langchain.prompts import PromptTemplate
+from langchain.chat_models.openai import ChatOpenAI
+    
 
 class LLMLogger:
     """

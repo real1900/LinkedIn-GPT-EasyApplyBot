@@ -1,68 +1,79 @@
-email: email@domain.com
-password: yourpassword
+email: suleman361@gmail.com
+password: Godisgreat19
 
 disableAntiLock: False
 
 remote: True
 
 experienceLevel:
- internship: False
- entry: True
- associate: True
- mid-senior level: True
- director: False
- executive: False
+  internship: False
+  entry: True
+  associate: True
+  mid-senior level: True
+  director: False
+  executive: False
 
 jobTypes:
- full-time: True
- contract: True
- part-time: False
- temporary: True
- internship: False
- other: False
- volunteer: False
+  full-time: True
+  contract: True
+  part-time: False
+  temporary: True
+  internship: False
+  other: False
+  volunteer: False
 
 date:
- all time: True
- month: False
- week: False
- 24 hours: False
+  all time: True
+  month: False
+  week: False
+  "24 hours": False  # Use quotes for keys with special characters like spaces
 
 positions:
- #- First position
- #- A second position
- #- A third position
- #- ...
+  # - First position
+  # - A second position
+  # - A third position
+  - iOS Architect
+  - Mobile Architect
+  - iOS Engineer
+  - Flutter developer
+  - React Native Developer
+  - Mobile Developer
+  - Senior Software Engineer
+
 locations:
- #- First location
- #- A second location
- #- A third location
- - Los Angeles, California
- - Remote
+  # - First location
+  # - A second location
+  # - A third location
+  - Dallas, TX
+  - Remote
 
 distance: 50
 
 companyBlacklist:
- #- company
- #- company2
+  # - company
+  # - company2
 
 titleBlacklist:
- #- word1
- #- word2
+  # - word1
+  # - word2
 
 posterBlacklist:
- #- name1
- #- name2
+  # - name1
+  # - name2
+
+uploads:
+  resume: uploads/Suleman_Imdad_Resume.pdf
+  coverLetter: uploads/Suleman_Imdad_Cover_Letter.pdf
 
 # ------------ Additional parameters: personal info ---------------
 personalInfo:
- First Name: Suleman
- Last Name: Imdad
- Phone Country Code: United States (+1)              # See linkedin for your country code, must be exact according to the international platform, i.e. Italy (+39) not Italia (+39)
- Mobile Phone Number: 4086017007
- Street address: 13836 Bora Bora Way Apt 217
- City: Marina Del Rey                      # Include the state/province as well!
- State: CA
- Zip: 90292
- Linkedin: https://www.linkedin.com/in/suleman-imdad
- Website: https://www.apportunity.io          # github/website is interchangeable here
+  First Name: Suleman
+  Last Name: Imdad
+  Phone Country Code: United States (+1)  # See LinkedIn for your country code, must be exact according to the international platform, i.e., Italy (+39) not Italia (+39)
+  Mobile Phone Number: 4086017007
+  Street address: 13836 Bora Bora Way Apt 217
+  City: Marina Del Rey  # Include the state/province as well!
+  State: CA
+  Zip: 90292
+  Linkedin: https://www.linkedin.com/in/suleman-imdad
+  Website: https://www.apportunity.io  # GitHub/website is interchangeable here
