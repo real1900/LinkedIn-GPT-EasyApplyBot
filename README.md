@@ -31,6 +31,63 @@ First you need to provide your Open AI API key using environment variable `OPEN_
 
 > [You can set up the environment variable in your venv](https://stackoverflow.com/a/20918496/8150874)
 
+Certainly! Here are the detailed steps to edit the environment in macOS:
+
+### 1. Create a Virtual Environment
+If you haven't already created a virtual environment, do so with the following command:
+
+```bash
+python3 -m venv myenv
+```
+
+### 2. Activate the Virtual Environment
+Activate the virtual environment with the following command:
+
+```bash
+source myenv/bin/activate
+```
+
+### 3. Edit the Activation Script
+To set the `OPEN_AI_API_KEY` environment variable automatically whenever you activate your virtual environment, you need to edit the activation script. Follow these steps:
+
+1. Open the `activate` script in a text editor. You can use any text editor you prefer, like `nano`, `vim`, or `code` (VSCode).
+
+```bash
+nano myenv/bin/activate
+```
+
+2. Add the following line to the end of the `activate` script:
+
+```bash
+export OPEN_AI_API_KEY=your_openai_api_key
+```
+
+Replace `your_openai_api_key` with your actual OpenAI API key.
+
+3. Save the file and exit the text editor. In `nano`, you can do this by pressing `CTRL + X`, then `Y` to confirm changes, and `Enter` to save.
+
+### 4. Reactivate the Virtual Environment
+To ensure the changes take effect, deactivate and then reactivate your virtual environment:
+
+```bash
+deactivate
+source myenv/bin/activate
+```
+
+### 5. Verify the Environment Variable
+Check that the `OPEN_AI_API_KEY` environment variable is set correctly:
+
+```bash
+echo $OPEN_AI_API_KEY
+```
+
+You should see your API key printed in the terminal.
+
+### Summary
+Now, every time you activate your virtual environment with `source myenv/bin/activate`, the `OPEN_AI_API_KEY` environment variable will be set automatically. This ensures your API key is always available in your development environment.
+### NOTE
+You can ALSO set environment variables globally so they are available in all terminal sessions, not just within a specific virtual environment. 
+
 I recommend to set a [Rate Limit](https://platform.openai.com/account/rate-limits) on your OpenAI account if you plan to leave the bot running for a long time, as it can get expensive quickly. I tried to use the cheapest models possible, but still requires `GPT-3.5-Turbo` to work.
 
 ### Your information
@@ -63,14 +120,14 @@ pip3 install -r requirements.txt
 ## Execute
 To run the bot, run the following in the command line, providing the path to your personal information directory as only argument.
 ```bash
-python3 main.py path/to/your/personal/iformation/directory
+python3 main.py path/to/your/personal/information/directory
 ```
 
 ## Config.yaml Explanations
 Just fill in your email and password for linkedin.
 ```yaml
-email: email@domain.com
-password: yourpassword
+email: suleman361@gmail.com
+password: Godisgreat19
 ```
 
 This prevents your computer from going to sleep so the bot can keep running when you are not using it. Set this to True if you want this disabled.
@@ -80,7 +137,7 @@ disableAntiLock: False
 
 Set this to True if you want to look for remote jobs only.
 ```yaml
-remote: False
+remote: True
 ```
 
 This is for what level of jobs you want the search to contain. You must choose at least one.
@@ -88,8 +145,8 @@ This is for what level of jobs you want the search to contain. You must choose a
 experienceLevel:
  internship: False
  entry: True
- associate: False
- mid-senior level: False
+ associate: True
+ mid-senior level: True
  director: False
  executive: False
 ```
@@ -98,7 +155,7 @@ This is for what type of job you are looking for. You must choose at least one.
 ```yaml
 jobTypes:
  full-time: True
- contract: False
+ contract: True
  part-time: False
  temporary: False
  internship: False
@@ -122,6 +179,13 @@ positions:
  #- A second position
  #- A third position
  #- ...
+ - iOS Architect
+ - Mobile Architect
+ - iOS Engineer
+ - Flutter developer
+ - React Native Developer
+ - Mobile Developer
+ - Senior Software Engineer 
  ```
 
 A list of locations you are applying to. You must include at least one.
@@ -132,6 +196,7 @@ locations:
  #- A third location
  #- ...
  - Remote
+ - Dallas, TX
  ```
 
 How far out of the location you want your search to go. You can only input 0, 5, 10, 25, 50, 100 miles.
@@ -160,16 +225,16 @@ The website is interchangeable for github/portfolio/website.
 ```yaml
 # ------------ Additional parameters: personal info ---------------
 personalInfo:
- First Name: FirstName
- Last Name: LastName
- Phone Country Code: Canada (+1) # See linkedin for your country code, must be exact according to the international platform, i.e. Italy (+39) not Italia (+39)
- Mobile Phone Number: 1234567890
- Street address: 123 Fake Street
- City: Red Deer, Alberta # Include the state/province as well!
- State: YourState
- Zip: YourZip/Postal
- Linkedin: https://www.linkedin.com/in/my-linkedin-profile
- Website: https://www.my-website.com # github/website is interchangeable here
+ First Name: Suleman
+ Last Name: Imdad
+ Phone Country Code: United States (+1)
+ Mobile Phone Number: 4086017007
+ Street address: 13836 Bora Bora Way
+ City: Marina Del Rey, CA 
+ State: California
+ Zip: 90292
+ Linkedin: https://www.linkedin.com/in/suleman-imdad
+ Website: https://www.apportunity.io 
 ```
 
 # Known issues
