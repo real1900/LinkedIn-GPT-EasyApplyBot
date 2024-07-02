@@ -8,8 +8,8 @@ remote: True
 experienceLevel:
  internship: False
  entry: True
- associate: False
- mid-senior level: False
+ associate: True
+ mid-senior level: True
  director: False
  executive: False
 
@@ -37,10 +37,10 @@ locations:
  #- First location
  #- A second location
  #- A third location
- #- ...
+ - Los Angeles, California
  - Remote
 
-distance: 25
+distance: 50
 
 companyBlacklist:
  #- company
@@ -56,13 +56,13 @@ posterBlacklist:
 
 # ------------ Additional parameters: personal info ---------------
 personalInfo:
- First Name: FirstName
- Last Name: LastName
- Phone Country Code: Canada (+1)              # See linkedin for your country code, must be exact according to the international platform, i.e. Italy (+39) not Italia (+39)
- Mobile Phone Number: 1234567890
- Street address: 123 Fake Street
- City: Red Deer, Alberta                      # Include the state/province as well!
- State: YourState
- Zip: YourZip/Postal
- Linkedin: https://www.linkedin.com/in/my-linkedin-profile
- Website: https://www.my-website.com          # github/website is interchangeable here
+ First Name: Suleman
+ Last Name: Imdad
+ Phone Country Code: United States (+1)              # See linkedin for your country code, must be exact according to the international platform, i.e. Italy (+39) not Italia (+39)
+ Mobile Phone Number: 4086017007
+ Street address: 13836 Bora Bora Way Apt 217
+ City: Marina Del Rey                      # Include the state/province as well!
+ State: CA
+ Zip: 90292
+ Linkedin: https://www.linkedin.com/in/suleman-imdad
+ Website: https://www.apportunity.io          # github/website is interchangeable here
