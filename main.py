@@ -3,6 +3,7 @@ import argparse
 from linkedineasyapply import LinkedinEasyApply
 from validate_email import validate_email
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.options import Options
 from pathlib import Path
@@ -19,7 +20,8 @@ def init_browser():
     driver_path = ChromeDriverManager().install()
 
     # Initialize WebDriver with specified path
-    driver = webdriver.Chrome(executable_path=driver_path, options=browser_options)
+    service = Service(driver_path, options=browser_options)
+    driver = webdriver.Chrome(service=service)
     return driver
 
 

@@ -1,11 +1,17 @@
 import time, random, csv, pyautogui, pdb, traceback, sys
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.remote.webelement import WebElement
 from datetime import date
 from itertools import product
+
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
 from gpt import GPTAnswerer
 from pathlib import Path
 import os
@@ -382,11 +388,14 @@ class LinkedinEasyApply:
         easy_apply_button = None
 
         try:
-            easy_apply_button = self.browser.find_element(By.CLASS_NAME, 'jobs-apply-button')
-        except:
-            # If the easy apply button is not found, is because is disabled. Supposedly is because the job is already applied.
-            # There is a pre-filtering before to only search easy apply jobs.
-            return False
+            # follow-company-checkbox
+            easy_apply_button = WebDriverWait(self.browser, 10).until(
+                EC.element_to_be_clickable((By.CLASS_NAME, 'jobs-apply-button'))
+            )
+            actions = ActionChains(self.browser)
+            actions.move_to_element(easy_apply_button).click().perform()
+        except Exception as e:
+            print(f"Failed to unfollow company! {e}")
 
         # Skip if the easy apply button says "Continue", this is an application that was already started, but couldn't be finished, and it won't be finished by this script.
         if easy_apply_button.text == "Continue":
@@ -724,8 +733,12 @@ class LinkedinEasyApply:
     # MARK: - Helper Methods
     def unfollow(self):
         try:
-            follow_checkbox = self.browser.find_element(By.XPATH, "//label[contains(.,\'to stay up to date with their page.\')]").click()
-            follow_checkbox.click()
+            # follow-company-checkbox
+            follow_checkbox = WebDriverWait(self.browser, 10).until(
+                EC.element_to_be_clickable((By.ID, 'follow-company-checkbox'))
+            )
+            actions = ActionChains(self.browser)
+            actions.move_to_element(follow_checkbox).click().perform()
         except Exception as e:
             print(f"Failed to unfollow company! {e}")
 
